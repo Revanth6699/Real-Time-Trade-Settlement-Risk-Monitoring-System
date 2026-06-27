@@ -2,44 +2,45 @@
 __pycache__/
 *.py[cod]
 *.pyo
-*.egg-info/
+*.pyd
 
-# Virtual environments
+# Virtual Environment
 venv/
-env/
-.venv/
-
-# Environment variables
 .env
 .env.*
 
-# IDE
+# VS Code
 .vscode/
+
+# PyCharm
 .idea/
 
 # Logs
 *.log
 
-# Database
-*.sqlite
+# SQLite
 *.db
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Docker
+*.tar
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Cache
-.cache/
-.pytest_cache/
+# Secrets
+secrets.json
+credentials.json
 
-# Reports
-reports/
+# ML Models (if too large)
+*.pkl
 
 # Grafana
-grafana-data/
+grafana.db
 
-# Docker
-*.tar
-
-# Jupyter
-.ipynb_checkpoints/
+# PDF Reports
+*.pdf
