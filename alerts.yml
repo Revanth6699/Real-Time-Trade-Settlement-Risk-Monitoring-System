@@ -4,7 +4,7 @@ groups:
   rules:
 
   - alert: FastAPIDown
-    expr: up{job="fastapi"} == 0
+    expr: up{job="trade-risk-api"} == 0
     for: 30s
     labels:
       severity: critical
@@ -44,10 +44,3 @@ groups:
     expr: rate(process_cpu_seconds_total[5m]) > 0.8
     for: 2m
 
-  - alert: EmailTest
-    expr: vector(1)
-    for: 10s
-    labels:
-      severity: info
-    annotations:
-      summary: "SMTP email notification test"
