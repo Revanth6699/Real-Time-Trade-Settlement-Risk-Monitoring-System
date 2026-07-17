@@ -1,0 +1,45 @@
+services:
+
+#############################################
+# FASTAPI
+#############################################
+
+- type: web
+  name: trade-risk-api
+
+  env: docker
+
+  dockerfilePath: ./Dockerfile
+
+#############################################
+# PROMETHEUS
+#############################################
+
+- type: web
+  name: prometheus
+
+  env: docker
+
+  dockerfilePath: ./monitoring/prometheus/Dockerfile
+
+#############################################
+# ALERTMANAGER
+#############################################
+
+- type: web
+  name: alertmanager
+
+  env: docker
+
+  dockerfilePath: ./monitoring/alertmanager/Dockerfile
+
+#############################################
+# GRAFANA
+#############################################
+
+- type: web
+  name: grafana
+
+  env: docker
+
+  dockerfilePath: ./monitoring/grafana/Dockerfile
