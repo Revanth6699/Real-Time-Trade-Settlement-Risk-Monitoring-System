@@ -1,0 +1,24 @@
+global:
+
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: '22102a030104@gmail.com'
+  smtp_auth_username: '22102a030104@gmail.com'
+  smtp_auth_password: 'jprb ooww niaf viyi'
+  smtp_require_tls: true
+
+route:
+  receiver: notifications
+
+receivers:
+
+- name: notifications
+
+  email_configs:
+
+  - to: '22102a030104@gmail.com'
+
+  telegram_configs:
+
+  - bot_token: 8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE
+    chat_id: 5360828542
+    send_resolved: true
