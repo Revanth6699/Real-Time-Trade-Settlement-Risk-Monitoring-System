@@ -17,8 +17,10 @@ from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 from app.models.user import User
+import os
 
 import re
+
 
 # =========================================================
 # PASSWORD HASHING
@@ -33,7 +35,7 @@ pwd_context = CryptContext(
 # JWT CONFIG
 # =========================================================
 
-SECRET_KEY = "supersecretkey"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 ALGORITHM = "HS256"
 
@@ -215,14 +217,12 @@ def verify_token(token: str):
             detail="Invalid token"
         )
 
-# =========================================================
+# =====================================================
 # DECODE ACCESS TOKEN
-# =========================================================
+# =====================================================
 
 def decode_access_token(token: str):
-
     try:
-
         payload = jwt.decode(
             token,
             SECRET_KEY,
@@ -232,43 +232,161 @@ def decode_access_token(token: str):
         username = payload.get("sub")
         role = payload.get("role")
 
+        if username is None:
+            return None
+
         return {
             "username": username,
             "role": role
         }
 
-    except JWTError:
-
+    except JWTError as e:
+        print("JWT Decode Error:", e)
         return None
 
-# =========================================================
+
+# =====================================================
 # GET CURRENT USER
-# =========================================================
+# =====================================================
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ):
-
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials"
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
 
     payload = decode_access_token(token)
 
-    if payload is None:
 
+    if payload is None:
         raise credentials_exception
 
     username = payload.get("username")
+    role = payload.get("role")
 
-    user = db.query(User).filter(
-        User.username == username
-    ).first()
+    user = (
+        db.query(User)
+        .filter(User.username == username)
+        .first()
+    )
 
     if user is None:
-
         raise credentials_exception
 
     return user
+
+# =========================================================
+# ROLE BASED ACCESS CONTROL (RBAC)
+# =========================================================
+
+def require_roles(*allowed_roles):
+    """
+    Generic RBAC dependency.
+    Example:
+        Depends(require_roles("admin"))
+        Depends(require_roles("admin", "trader"))
+    """
+
+    def role_checker(current_user: User = Depends(get_current_user)):
+
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this resource."
+            )
+
+        return current_user
+
+    return role_checker
+
+
+# =========================================================
+# ADMIN
+# =========================================================
+
+def admin_required(current_user: User = Depends(get_current_user)):
+
+    if current_user.role != "admin":
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required."
+        )
+
+    return current_user
+
+
+# =========================================================
+# TRADER
+# =========================================================
+
+def trader_required(current_user: User = Depends(get_current_user)):
+
+    if current_user.role not in ["admin", "trader"]:
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Trader privileges required."
+        )
+
+    return current_user
+
+
+# =========================================================
+# AUDITOR
+# =========================================================
+
+def auditor_required(current_user: User = Depends(get_current_user)):
+
+    if current_user.role not in ["admin", "auditor"]:
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Auditor privileges required."
+        )
+
+    return current_user
+
+
+# =========================================================
+# ADMIN OR TRADER
+# =========================================================
+
+def admin_or_trader(current_user: User = Depends(get_current_user)):
+
+    if current_user.role not in ["admin", "trader"]:
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied."
+        )
+
+    return current_user
+
+
+# =========================================================
+# ADMIN OR AUDITOR
+# =========================================================
+
+def admin_or_auditor(current_user: User = Depends(get_current_user)):
+
+    if current_user.role not in ["admin", "auditor"]:
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied."
+        )
+
+    return current_user
+
+
+# =========================================================
+# ANY AUTHENTICATED USER
+# =========================================================
+
+def authenticated_user(current_user: User = Depends(get_current_user)):
+    return current_user

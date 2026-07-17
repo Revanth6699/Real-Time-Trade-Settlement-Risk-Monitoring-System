@@ -7,15 +7,11 @@ scikit-learn
 matplotlib
 seaborn
 joblib
-streamlit
 fastapi
 uvicorn
 xgboost
 requests
 plotly
-streamlit_autorefresh
-streamlit-cookies-manager
-dotenv
 openpyxl
 websockets
 websocket-client
@@ -24,6 +20,8 @@ passlib[bcrypt]
 bcrypt==4.0.1
 python-multipart
 redis>=5.0.0
-prometheus_client
+prometheus-client
 slowapi
 redis[hiredis]
+python-dotenv
+confluent-kafka

@@ -1,0 +1,53 @@
+groups:
+- name: trade-risk-alerts
+
+  rules:
+
+  - alert: FastAPIDown
+    expr: up{job="fastapi"} == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: FastAPI is down
+
+  - alert: HighRiskTrades
+    expr: high_risk_trades_total > 500
+    for: 30s
+    labels:
+      severity: warning
+    annotations:
+      summary: High Risk Trades
+      description: High risk trades exceeded threshold.
+
+  - alert: TooManyAnomalies
+    expr: anomalies_total > 500
+    for: 30s
+    labels:
+      severity: warning
+    annotations:
+      summary: Too many anomalies
+
+  - alert: TooManyTrades
+    expr: total_trades_processed_total > 30000
+    for: 30s
+    labels:
+      severity: info
+    annotations:
+      summary: Trade volume extremely high
+
+  - alert: HighMemory
+    expr: process_resident_memory_bytes > 500000000
+    for: 2m
+
+  - alert: HighCPU
+    expr: rate(process_cpu_seconds_total[5m]) > 0.8
+    for: 2m
+
+  - alert: EmailTest
+    expr: vector(1)
+    for: 10s
+    labels:
+      severity: info
+    annotations:
+      summary: "SMTP email notification test"

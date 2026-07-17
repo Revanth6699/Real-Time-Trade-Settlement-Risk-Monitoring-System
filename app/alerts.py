@@ -1,19 +1,18 @@
 import json
 import redis.asyncio as redis
+import os
 
-REDIS_HOST = "redis"
-REDIS_PORT = 6379
+REDIS_URL = os.getenv("REDIS_URL")
 
+redis_client = redis.from_url(
+    REDIS_URL,
+    decode_responses=True
+)
 ALERT_CHANNEL = "alerts_channel"
 
 
 async def publish_alert(alert_data: dict):
 
-    redis_client = redis.Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        decode_responses=True
-    )
 
     await redis_client.publish(
         ALERT_CHANNEL,

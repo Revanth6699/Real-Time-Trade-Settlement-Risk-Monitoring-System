@@ -1,220 +1,129 @@
 import json
+import os
 import time
+import random
 
+from dotenv import load_dotenv
 from kafka import KafkaConsumer
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from kafka.errors import KafkaError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
+from app.database import SessionLocal
 from app.models.trade import Trade
-from app.database import Base
 
-from app.redis_pubsub import publish_trade
-import asyncio
-from app.alerts import check_alerts, publish_alert
+load_dotenv()
 
-from app.ml.predict import predict_trade
-from app.ml.risk_engine import calculate_risk
-
-
-# =========================================================
-# DATABASE CONFIG
-# =========================================================
-
-POSTGRES_SERVER = "postgres"
-POSTGRES_USER = "postgres"
-POSTGRES_PASSWORD = "postgres"
-
-# CONNECT TO DEFAULT POSTGRES DB FIRST
-DEFAULT_DB_URL = (
-    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-    f"@{POSTGRES_SERVER}:5432/postgres"
-)
-
-TARGET_DB = "trade_db"
-
-# =========================================================
-# CREATE DATABASE IF NOT EXISTS
-# =========================================================
-
-while True:
-    try:
-        default_engine = create_engine(DEFAULT_DB_URL)
-
-        with default_engine.connect() as conn:
-            conn.execute(text("commit"))
-
-            result = conn.execute(
-                text(
-                    f"SELECT 1 FROM pg_database "
-                    f"WHERE datname='{TARGET_DB}'"
-                )
-            )
-
-            exists = result.scalar()
-
-            if not exists:
-                conn.execute(text(f"CREATE DATABASE {TARGET_DB}"))
-                print(f"Database '{TARGET_DB}' created successfully")
-
-            else:
-                print(f"Database '{TARGET_DB}' already exists")
-
-        break
-
-    except Exception as e:
-        print("Waiting for PostgreSQL...", e)
-        time.sleep(5)
-
-# =========================================================
-# MAIN DATABASE CONNECTION
-# =========================================================
-
-DATABASE_URL = (
-    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-    f"@{POSTGRES_SERVER}:5432/{TARGET_DB}"
-)
-
-while True:
-    try:
-        engine = create_engine(DATABASE_URL)
-
-        SessionLocal = sessionmaker(
-            autocommit=False,
-            autoflush=False,
-            bind=engine
-        )
-
-        # CREATE TABLES
-        Base.metadata.create_all(bind=engine)
-
-        db = SessionLocal()
-
-        print("Connected to trade_db successfully")
-        break
-
-    except Exception as e:
-        print("Database connection failed:", e)
-        time.sleep(5)
-
-# =========================================================
-# KAFKA CONNECTION
-# =========================================================
-
-while True:
-    try:
-        consumer = KafkaConsumer(
-            "trades",
-            bootstrap_servers="kafka:9092",
-            value_deserializer=lambda m: json.loads(
-                m.decode("utf-8")
-            ),
-            auto_offset_reset="latest",
-            group_id="trade-group"
-        )
-
-        print("Kafka Consumer Started...")
-        break
-
-    except Exception as e:
-        print("Kafka not ready... retrying", e)
-        time.sleep(5)
-
-# =========================================================
-# CONSUMER LOOP
-# =========================================================
-
-for message in consumer:
-
-    try:
-        trade = message.value
-
-        print("Received Trade:", trade)
-
-        # =================================================
-        # ML PREDICTION
-        # =================================================
-
-        prediction, probability = predict_trade(trade)
-
-        # =================================================
-        # RISK ENGINE
-        # =================================================
-        
-        
-        risk_score, anomaly_flag = calculate_risk(trade)
-        risk_score = float(risk_score)
+print("BOOTSTRAP =", os.getenv("KAFKA_BOOTSTRAP_SERVERS"))
+print("TOPIC =", os.getenv("KAFKA_TOPIC"))
+print("USER =", os.getenv("KAFKA_USERNAME"))
+print("Connected to Neon PostgreSQL")
 
 
-        # =================================================
-        # INSERT TRADE
-        # =================================================
-
-        new_trade = Trade(
-            trade_id=trade["trade_id"],
-            asset=trade["asset"],
-            broker=trade["broker"],
-            quantity=trade["quantity"],
-            price=trade["price"],
-            trade_amount=trade["trade_amount"],
-            settlement_status=trade["settlement_status"],
-            retry_count=trade.get("retry_count", 0),
-
-            risk_score=risk_score,
-            anomaly_flag=anomaly_flag,
-
-            ml_prediction=prediction,
-            ml_probability=probability
-        )
-        db.add(new_trade)
-        db.commit()
+def calculate_risk(trade):
+    risk = random.randint(10, 100)
+    anomaly = risk >= 80
+    return risk, anomaly
 
 
-        trade_payload = {
-            "trade_id": trade["trade_id"],
-            "asset": trade["asset"],
-            "broker": trade["broker"],
-            "quantity": trade["quantity"],
-            "price": trade["price"],
-            "trade_amount": trade["trade_amount"],
-            "risk_score": risk_score,
-            "settlement_status": trade["settlement_status"],
-            "anomaly_flag": anomaly_flag
-        }
-
-        alerts = check_alerts(trade_payload)
-
-        if alerts:
-
-            alert = {
-                "trade_id": trade["trade_id"],
-                "asset": trade["asset"],
-                "broker": trade["broker"],
-                "risk_score": risk_score,
-                "alerts": alerts
-            }
-
-            asyncio.run(
-                publish_alert(alert)
-            )
+def create_consumer():
+    while True:
         try:
-            
-            publish_trade(trade_payload)
-            
-            print(
-                "Published to Redis:",
-                trade["trade_id"]
+            consumer = KafkaConsumer(
+                os.getenv("KAFKA_TOPIC"),
+                bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+                security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL"),
+                sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM"),
+                sasl_plain_username=os.getenv("KAFKA_USERNAME"),
+                sasl_plain_password=os.getenv("KAFKA_PASSWORD"),
+
+                group_id="trade-monitor-group",
+
+                auto_offset_reset="latest",
+                enable_auto_commit=True,
+
+                value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+
+                request_timeout_ms=60000,
+                session_timeout_ms=30000,
+                api_version_auto_timeout_ms=30000,
             )
+
+            # Join the consumer group
+            consumer.poll(timeout_ms=1000)
+
+            # Skip any existing backlog ONLY on startup
+            partitions = consumer.assignment()
+
+            if partitions:
+                consumer.seek_to_end(*partitions)
+
+            print("Connected to Redpanda Cloud")
+            print("Listening for NEW trades...\n")
+
+            return consumer
 
         except Exception as e:
-            print(
-                "Redis Publish Error:",
-                e
-            )
-        print(
-            "Trade inserted successfully:",
-            trade["trade_id"]
-        )
-        
+            print(f"Kafka connection failed: {e}")
+            print("Retrying in 5 seconds...\n")
+            time.sleep(5)
+
+
+consumer = create_consumer()
+
+while True:
+
+    try:
+
+        for message in consumer:
+
+            data = message.value
+
+            risk_score, anomaly_flag = calculate_risk(data)
+
+            db = SessionLocal()
+
+            try:
+
+                trade = Trade(
+                    trade_id=data["trade_id"],
+                    asset=data["asset"],
+                    broker=data["broker"],
+                    quantity=data["quantity"],
+                    price=data["price"],
+                    trade_amount=data["trade_amount"],
+                    settlement_status=data["settlement_status"],
+                    risk_score=risk_score,
+                    anomaly_flag=anomaly_flag,
+                    timestamp=data["timestamp"],
+                )
+
+                db.add(trade)
+                db.commit()
+
+                print(
+                    f"Stored: {trade.trade_id} | "
+                    f"Risk={risk_score} | "
+                    f"Anomaly={anomaly_flag}"
+                )
+
+            except IntegrityError:
+                db.rollback()
+                print(f"Duplicate skipped: {data['trade_id']}")
+
+            except OperationalError:
+                db.rollback()
+                print("Neon connection lost. Reconnecting...")
+                time.sleep(2)
+
+            finally:
+                db.close()
+
+    except KafkaError as e:
+        print(f"Kafka error: {e}")
+        print("Reconnecting to Redpanda...\n")
+        consumer = create_consumer()
+
     except Exception as e:
-        print("Insert failed:", e)
-        db.rollback()
+        print(f"Unexpected error: {e}")
+        print("Restarting consumer...\n")
+        consumer = create_consumer()

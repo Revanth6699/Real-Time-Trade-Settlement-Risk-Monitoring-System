@@ -46,7 +46,6 @@ weights = [70, 10, 15, 5]
 # CONSUMER LOOP
 # =========================================================
 
-print("Settlement Consumer Started...")
 
 for message in consumer:
 

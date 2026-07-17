@@ -2,26 +2,45 @@ import json
 import uuid
 import time
 import random
+import os
+
+from dotenv import load_dotenv
 from kafka import KafkaProducer
-from kafka.errors import KafkaConnectionError
+from kafka.errors import KafkaError
 
-# Retry Kafka connection
-producer = None
+load_dotenv()
 
-while producer is None:
-    try:
-        producer = KafkaProducer(
-            bootstrap_servers='kafka:9092',
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
-        )
-        print("Connected to Kafka Producer")
-    except Exception as e:
-        print(f"Kafka not ready: {e}")
-        time.sleep(5)
-assets = ["AAPL", "TSLA", "MSFT", "AMZN"]
-brokers = ["Goldman", "JP Morgan", "Citadel"]
+BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+TOPIC = os.getenv("KAFKA_TOPIC")
 
-print("Kafka Producer Started...")
+producer = KafkaProducer(
+    bootstrap_servers=BOOTSTRAP_SERVERS,
+    security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL"),
+    sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM"),
+    sasl_plain_username=os.getenv("KAFKA_USERNAME"),
+    sasl_plain_password=os.getenv("KAFKA_PASSWORD"),
+    value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+    api_version_auto_timeout_ms=30000,
+)
+
+print("Connected to Redpanda Cloud")
+
+assets = [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "TSLA",
+    "AMZN",
+    "NVDA"
+]
+
+brokers = [
+    "JP Morgan",
+    "Goldman Sachs",
+    "Morgan Stanley",
+    "Barclays",
+    "Citibank"
+]
 
 while True:
 
@@ -31,19 +50,23 @@ while True:
         "broker": random.choice(brokers),
         "quantity": random.randint(1, 1000),
         "price": round(random.uniform(100, 1000), 2),
+        "settlement_status": random.choice(
+            ["SUCCESS", "FAILED", "PENDING"]
+        ),
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
 
     trade["trade_amount"] = round(
-        trade["quantity"] * trade["price"], 2
+        trade["quantity"] * trade["price"],
+        2
     )
 
-    trade["settlement_status"] = random.choices(
-        ["PENDING", "FAILED", "COMPLETED"],
-        weights=[50, 30, 20]
-    )[0]
-    
-    producer.send("trades", value=trade)
+    try:
+        producer.send(TOPIC, trade)
+        producer.flush()
+        print("Produced:", trade)
 
-    print(f"Trade Sent: {trade}")
+    except KafkaError as e:
+        print(e)
 
     time.sleep(2)

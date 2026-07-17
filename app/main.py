@@ -22,6 +22,7 @@ from prometheus_client import (
 from pydantic import BaseModel
 
 import redis
+import os
 
 from app.database import (
     SessionLocal,
@@ -33,6 +34,7 @@ from app.database import (
 from app.models import trade
 from app.models.trade import Trade
 from app.models.user import User
+from app.schemas import UserCreate, UserLogin
 
 from app.routes.websocket import (
     router as websocket_router
@@ -50,7 +52,14 @@ from app.auth import (
     hash_password,
     authenticate_user,
     create_access_token,
-    validate_password
+    validate_password,
+    admin_required,
+    trader_required,
+    auditor_required,
+    admin_or_trader,
+    admin_or_auditor,
+    authenticated_user
+
 )
 from fastapi.security import OAuth2PasswordBearer
 
@@ -62,6 +71,32 @@ import json
 import asyncio
 from app.routes.metrics import router as metrics_router
 
+import threading
+
+from app.routes.health import router as health_router
+
+from app.monitoring.prometheus_metrics import (
+    TRADES_PRODUCED,
+    TRADES_STORED,
+    MARKET_STATE,
+    HIGH_RISK,
+    ANOMALIES,
+    TOTAL,
+)
+
+
+from contextlib import asynccontextmanager
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Connected to PostgreSQL")
+    print("Connected to Upstash Redis")
+
+    yield
+
+    print("Application shutting down")
 
 
 
@@ -71,15 +106,18 @@ from app.routes.metrics import router as metrics_router
 
 app = FastAPI(
     title="Real-Time Trade Settlement Risk Monitoring API",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan
 )
-
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="login"
 )
 app.include_router(websocket_router)
 app.include_router(alerts_router)
+app.include_router(health_router)
+app.include_router(metrics_router)
+
 
 
 # =====================================
@@ -134,6 +172,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # =========================================================
 # WEBSOCKET ROUTER
 # =========================================================
@@ -141,12 +180,12 @@ app.add_middleware(
 app.include_router(websocket_router)
 
 # =========================================================
-# REDIS
+# REDIS (UPSTASH)
 # =========================================================
 
-redis_client = redis.Redis(
-    host="redis",
-    port=6379,
+redis_client = redis.Redis.from_url(
+    os.getenv("REDIS_URL"),
+    ssl=True,
     decode_responses=True
 )
 
@@ -163,11 +202,6 @@ app.state.limiter = limiter
 # =========================================================
 # PROMETHEUS METRICS
 # =========================================================
-
-trade_counter = Counter(
-    "total_trades_processed",
-    "Total processed trades"
-)
 
 api_hits = Counter(
     "api_hits",
@@ -201,22 +235,6 @@ def home():
         "message": "Real-Time Trade Settlement Risk Monitoring API Running"
     }
 
-# =========================================================
-# HEALTH CHECK
-# =========================================================
-
-@app.get("/health")
-def health():
-
-    api_hits.inc()
-
-    return {
-        "status": "healthy",
-        "api": "running",
-        "database": "connected",
-        "redis": "connected",
-        "kafka": "connected"
-    }
 
 # =========================================================
 # LOGIN
@@ -264,11 +282,11 @@ class UserRegister(BaseModel):
 
 @app.post("/register")
 def register(
-    data: UserRegister,
-    db: Session = Depends(get_db)
-):
+    user: UserCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(admin_required)):
     existing_user = db.query(User).filter(
-        User.username == data.username
+        User.username == user.username
     ).first()
 
     if existing_user:
@@ -278,16 +296,16 @@ def register(
             detail="Username already exists"
         )
 
-    validate_password(data.password)
+    validate_password(user.password)
 
     hashed_password = hash_password(
-        data.password
+        user.password
     )
 
     new_user = User(
-        username=data.username,
+        username=user.username,
         hashed_password=hashed_password,
-        role=data.role
+        role=user.role
     )
     
 
@@ -304,7 +322,7 @@ def register(
 # =========================================================
 
 @app.get("/trades")
-def get_trades(db: Session = Depends(get_db)):
+def get_trades(db: Session = Depends(get_db),current_user=Depends(trader_required)):
 
     trades = db.query(Trade).all()
 
@@ -333,7 +351,7 @@ def get_trades(db: Session = Depends(get_db)):
 
 @app.get("/stats")
 @limiter.limit("20/minute")
-def get_stats(request: Request):
+def get_stats(request: Request, current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -371,7 +389,6 @@ def get_stats(request: Request):
             }
         )
 
-        trade_counter.inc(total_trades)
 
         return {
             "total_trades": total_trades,
@@ -389,7 +406,7 @@ def get_stats(request: Request):
 # =========================================================
 
 @app.get("/cached-stats")
-def cached_stats():
+def cached_stats(current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -407,7 +424,7 @@ def cached_stats():
 # =========================================================
 
 @app.get("/trades/recent")
-def recent_trades():
+def recent_trades(current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -444,7 +461,7 @@ def recent_trades():
 # =========================================================
 
 @app.get("/broker-activity")
-def broker_activity():
+def broker_activity(current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -477,7 +494,7 @@ def broker_activity():
 # =========================================================
 
 @app.get("/high-risk-trades")
-def high_risk_trades():
+def high_risk_trades(current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -513,7 +530,7 @@ def high_risk_trades():
 # =========================================================
 
 @app.get("/failed-trades")
-def failed_trades():
+def failed_trades(current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -548,7 +565,7 @@ def failed_trades():
 # =========================================================
 
 @app.get("/anomalies")
-def anomaly_trades():
+def anomaly_trades(current_user=Depends(authenticated_user)):
 
     api_hits.inc()
 
@@ -582,29 +599,67 @@ def anomaly_trades():
 # PROMETHEUS METRICS
 # =========================================================
 
-@app.get("/metrics")
+@app.get("/metrics", include_in_schema=False)
 def metrics():
 
-    return Response(
-        generate_latest(),
-        media_type="text/plain"
-    )
+    db = SessionLocal()
 
+    try:
+        total_trades = db.query(Trade).count()
+
+        stored_trades = total_trades
+
+        high_risk = (
+            db.query(Trade)
+            .filter(Trade.risk_score >= 80)
+            .count()
+        )
+
+        anomalies = (
+            db.query(Trade)
+            .filter(Trade.anomaly_flag == True)
+            .count()
+        )
+
+        failed = (
+            db.query(Trade)
+            .filter(Trade.settlement_status == "FAILED")
+            .count()
+        )
+
+        produced = total_trades
+
+        TRADES_PRODUCED.set(produced)
+        TRADES_STORED.set(stored_trades)
+        TOTAL.set(total_trades)
+        HIGH_RISK.set(high_risk)
+        ANOMALIES.set(anomalies)
+
+        if failed == 0:
+            MARKET_STATE.set(1)
+        elif failed < 100:
+            MARKET_STATE.set(2)
+        else:
+            MARKET_STATE.set(3)
+
+        return Response(
+            generate_latest(),
+            media_type="text/plain"
+        )
+
+    finally:
+        db.close()
 # =========================================================
 # ALL TRADES
 # =========================================================
 
 @app.get("/all-trades")
-def get_all_trades(db: Session = Depends(get_db)):
+def get_all_trades(db: Session = Depends(get_db),current_user=Depends(admin_required)):
+
 
     trades = db.query(Trade).all()
 
     return trades
-
-# =========================================================
-# Model Metrics
-# =========================================================
-app.include_router(metrics_router)
 
 
 # =========================================================
@@ -613,7 +668,8 @@ app.include_router(metrics_router)
 
 @app.get("/protected")
 def protected_route(
-    token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
+    current_user=Depends(admin_required)
 ):
 
     payload = verify_token(token)
@@ -625,9 +681,20 @@ def protected_route(
     
     
 @app.get("/users")
-def get_users(db: Session = Depends(get_db)):
-    users = db.query(User).all()
+def get_users(
+    current_user=Depends(admin_required),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    payload = verify_token(token)
 
+    if payload["role"] != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Admins only"
+        )
+
+    users = db.query(User).all()
     return [
         {
             "id": user.id,
@@ -635,7 +702,6 @@ def get_users(db: Session = Depends(get_db)):
         }
         for user in users
     ]
-
 
 @app.get("/admin")
 def admin_route(
@@ -658,7 +724,8 @@ def admin_route(
 
 @app.get("/trader")
 def trader_route(
-    token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
+    current_user=Depends(trader_required)
 ):
 
     payload = verify_token(token)
