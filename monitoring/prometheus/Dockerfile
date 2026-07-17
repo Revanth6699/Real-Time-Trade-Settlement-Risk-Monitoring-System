@@ -5,8 +5,4 @@ COPY alerts.yml /etc/prometheus/alerts.yml
 
 EXPOSE 9090
 
-CMD [
-  "--config.file=/etc/prometheus/prometheus.yml",
-  "--storage.tsdb.path=/prometheus",
-  "--web.enable-lifecycle"
-]
+CMD /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.enable-lifecycle
