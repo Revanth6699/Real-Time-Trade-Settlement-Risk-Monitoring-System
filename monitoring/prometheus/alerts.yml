@@ -4,6 +4,17 @@ groups:
 
   rules:
 
+  - alert: FastAPIDown
+    expr: up{job="trade-risk-api"} == 0
+    for: 1m
+
+    labels:
+      severity: critical
+
+    annotations:
+      summary: FastAPI Down
+      description: FastAPI service is unreachable.
+
   - alert: HighRiskTrades
     expr: high_risk_trades_total > 20
     for: 30s
@@ -13,7 +24,7 @@ groups:
 
     annotations:
       summary: High Risk Trades
-      description: High risk trades exceeded threshold.
+      description: More than 20 high-risk trades detected.
 
   - alert: TooManyAnomalies
     expr: anomalies_total > 10
@@ -24,7 +35,7 @@ groups:
 
     annotations:
       summary: Too Many Anomalies
-      description: Anomaly count exceeded threshold.
+      description: Too many anomalies detected.
 
   - alert: TooManyTrades
     expr: total_trades_processed_total > 500
@@ -35,15 +46,26 @@ groups:
 
     annotations:
       summary: High Trade Volume
-      description: Trade volume exceeded threshold.
+      description: Total processed trades exceeded threshold.
 
-  - alert: FastAPIDown
-    expr: up{job="trade-risk-api"} == 0
-    for: 1m
+  - alert: HighMemoryUsage
+    expr: process_resident_memory_bytes > 500000000
+    for: 2m
 
     labels:
-      severity: critical
+      severity: warning
 
     annotations:
-      summary: FastAPI Down
-      description: FastAPI is unreachable.
+      summary: High Memory Usage
+      description: Memory usage exceeded 500 MB.
+
+  - alert: HighCPUUsage
+    expr: rate(process_cpu_seconds_total[5m]) > 0.8
+    for: 2m
+
+    labels:
+      severity: warning
+
+    annotations:
+      summary: High CPU Usage
+      description: CPU usage exceeded 80%.
