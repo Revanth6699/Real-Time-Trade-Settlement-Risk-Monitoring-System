@@ -5,6 +5,14 @@ global:
 rule_files:
   - /etc/prometheus/alerts.yml
 
+alerting:
+  alertmanagers:
+    - scheme: https
+      static_configs:
+        - targets:
+            - alert-manager-jjz4.onrender.com
+            
+
 scrape_configs:
   - job_name: trade-risk-api
 
