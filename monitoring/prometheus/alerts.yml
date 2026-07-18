@@ -5,63 +5,45 @@ groups:
   rules:
 
   - alert: HighRiskTrades
-
     expr: high_risk_trades_total > 20
-
     for: 30s
 
     labels:
       severity: critical
 
     annotations:
-      summary: "High Risk Trades Detected"
-
-      description: "More than 20 high risk trades detected."
-
-
+      summary: High Risk Trades
+      description: High risk trades exceeded threshold.
 
   - alert: TooManyAnomalies
-
     expr: anomalies_total > 10
-
     for: 30s
 
     labels:
       severity: warning
 
     annotations:
-      summary: "Too Many Anomalies"
-
-      description: "Anomaly count exceeded threshold."
-
-
+      summary: Too Many Anomalies
+      description: Anomaly count exceeded threshold.
 
   - alert: TooManyTrades
-
-    expr: trades_stored_total > 500
-
+    expr: total_trades_processed_total > 500
     for: 1m
 
     labels:
       severity: warning
 
     annotations:
-      summary: "High Trade Volume"
-
-      description: "Trade volume exceeded 500."
-
-
+      summary: High Trade Volume
+      description: Trade volume exceeded threshold.
 
   - alert: FastAPIDown
-
-    expr: up == 0
-
+    expr: up{job="trade-risk-api"} == 0
     for: 1m
 
     labels:
       severity: critical
 
     annotations:
-      summary: "FastAPI Down"
-
-      description: "FastAPI service is unreachable."
+      summary: FastAPI Down
+      description: FastAPI is unreachable.
