@@ -8,10 +8,10 @@ rule_files:
 alerting:
   alertmanagers:
     - scheme: https
+      timeout: 30s
       static_configs:
         - targets:
-            - alert-manager-jjz4.onrender.com
-            
+            - alert-manager-jjz4.onrender.com            
 
 scrape_configs:
   - job_name: trade-risk-api
