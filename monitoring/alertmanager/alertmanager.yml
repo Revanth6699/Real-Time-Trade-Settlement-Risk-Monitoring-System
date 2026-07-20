@@ -1,4 +1,5 @@
 global:
+  resolve_timeout: 5m
 
   smtp_smarthost: 'smtp.gmail.com:587'
   smtp_from: '22102a030104@gmail.com'
@@ -7,18 +8,454 @@ global:
   smtp_require_tls: true
 
 route:
-  receiver: notifications
+  receiver: all-alerts
+
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
 
 receivers:
 
-- name: notifications
+####################################
+# Telegram
+####################################
 
-  email_configs:
-
-  - to: '22102a030104@gmail.com'
+- name: telegram
 
   telegram_configs:
 
-  - bot_token: 8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
     chat_id: 5360828542
-    send_resolved: true
+    parse_mode: HTML
+
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}
+
+
+####################################
+# Email
+####################################
+
+- name: email
+
+  email_configs:
+
+  - to: "22102a030104@gmail.com"
+
+####################################
+# Both
+####################################
+
+- name: all-alerts
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}  
+      
+    email_configs:
+
+  - to: "22102a030104@gmail.com"global:
+  resolve_timeout: 5m
+
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: '22102a030104@gmail.com'
+  smtp_auth_username: '22102a030104@gmail.com'
+  smtp_auth_password: 'jprb ooww niaf viyi'
+  smtp_require_tls: true
+
+route:
+  receiver: all-alerts
+
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+
+####################################
+# Telegram
+####################################
+
+- name: telegram
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}
+
+
+####################################
+# Email
+####################################
+
+- name: email
+
+  email_configs:
+
+  - to: "22102a030104@gmail.com"
+
+####################################
+# Both
+####################################
+
+- name: all-alerts
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}  
+      
+    email_configs:
+
+  - to: "22102a030104@gmail.com"global:
+  resolve_timeout: 5m
+
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: '22102a030104@gmail.com'
+  smtp_auth_username: '22102a030104@gmail.com'
+  smtp_auth_password: 'jprb ooww niaf viyi'
+  smtp_require_tls: true
+
+route:
+  receiver: all-alerts
+
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+
+####################################
+# Telegram
+####################################
+
+- name: telegram
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}
+
+
+####################################
+# Email
+####################################
+
+- name: email
+
+  email_configs:
+
+  - to: "22102a030104@gmail.com"
+
+####################################
+# Both
+####################################
+
+- name: all-alerts
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}  
+      
+    email_configs:
+
+  - to: "22102a030104@gmail.com"global:
+  resolve_timeout: 5m
+
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: '22102a030104@gmail.com'
+  smtp_auth_username: '22102a030104@gmail.com'
+  smtp_auth_password: 'jprb ooww niaf viyi'
+  smtp_require_tls: true
+
+route:
+  receiver: all-alerts
+
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+
+####################################
+# Telegram
+####################################
+
+- name: telegram
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}
+
+
+####################################
+# Email
+####################################
+
+- name: email
+
+  email_configs:
+
+  - to: "22102a030104@gmail.com"
+
+####################################
+# Both
+####################################
+
+- name: all-alerts
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}  
+      
+    email_configs:
+
+  - to: "22102a030104@gmail.com"global:
+  resolve_timeout: 5m
+
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: '22102a030104@gmail.com'
+  smtp_auth_username: '22102a030104@gmail.com'
+  smtp_auth_password: 'jprb ooww niaf viyi'
+  smtp_require_tls: true
+
+route:
+  receiver: all-alerts
+
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+
+####################################
+# Telegram
+####################################
+
+- name: telegram
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}
+
+
+####################################
+# Email
+####################################
+
+- name: email
+
+  email_configs:
+
+  - to: "22102a030104@gmail.com"
+
+####################################
+# Both
+####################################
+
+- name: all-alerts
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAEGEeLrFvOxO6pIe0OVlhH_UxKIpaHIIlE"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}  
+      
+    email_configs:
+
+  - to: "22102a030104@gmail.com"
