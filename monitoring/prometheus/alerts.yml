@@ -1,93 +1,71 @@
-global:
-  resolve_timeout: 5m
+groups:
 
-  smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: '22102a030104@gmail.com'
-  smtp_auth_username: '22102a030104@gmail.com'
-  smtp_auth_password: 'bxlm nkwu oubx fcij'
-  smtp_require_tls: true
+- name: trade-risk-alerts
 
-route:
-  receiver: all-alerts
+  rules:
 
-  group_wait: 10s
-  group_interval: 30s
-  repeat_interval: 1h
+  - alert: FastAPIDown
+    expr: up{job="trade-risk-api"} == 0
+    for: 1m
 
-receivers:
+    labels:
+      severity: critical
 
-####################################
-# Telegram
-####################################
+    annotations:
+      summary: FastAPI Down
+      description: FastAPI service is unreachable.
 
-- name: telegram
+  - alert: HighRiskTrades
+    expr: high_risk_trades_total > 20
+    for: 30s
 
-  telegram_configs:
+    labels:
+      severity: critical
 
-  - bot_token: "8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ"
-    chat_id: 5360828542
-    parse_mode: HTML
+    annotations:
+      summary: High Risk Trades
+      description: More than 20 high-risk trades detected.
 
+  - alert: TooManyAnomalies
+    expr: anomalies_total > 10
+    for: 30s
 
-    message: |
-      🚨 <b>Trade Settlement Alert</b>
+    labels:
+      severity: warning
 
-      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
-      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+    annotations:
+      summary: Too Many Anomalies
+      description: Too many anomalies detected.
 
-      📝 <b>Summary:</b>
-      {{ .CommonAnnotations.summary }}
+  - alert: TooManyTrades
+    expr: total_trades_processed_total > 500
+    for: 1m
 
-      📄 <b>Description:</b>
-      {{ .CommonAnnotations.description }}
+    labels:
+      severity: warning
 
-      🌐 <b>Instance:</b>
-      {{ .CommonLabels.instance }}
+    annotations:
+      summary: High Trade Volume
+      description: Total processed trades exceeded threshold.
 
-      🕒 <b>Time:</b>
-      {{ .CommonAnnotations.startsAt }}
+  - alert: HighMemoryUsage
+    expr: process_resident_memory_bytes > 500000000
+    for: 2m
 
+    labels:
+      severity: warning
 
-####################################
-# Email
-####################################
+    annotations:
+      summary: High Memory Usage
+      description: Memory usage exceeded 500 MB.
 
-- name: email
+  - alert: HighCPUUsage
+    expr: rate(process_cpu_seconds_total[5m]) > 0.8
+    for: 2m
 
-  email_configs:
+    labels:
+      severity: warning
 
-  - to: "22102a030104@gmail.com"
-
-####################################
-# Both
-####################################
-
-- name: all-alerts
-
-  telegram_configs:
-
-  - bot_token: "8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ"
-    chat_id: 5360828542
-    parse_mode: HTML
-
-    message: |
-      🚨 <b>Trade Settlement Alert</b>
-
-      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
-      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
-
-      📝 <b>Summary:</b>
-      {{ .CommonAnnotations.summary }}
-
-      📄 <b>Description:</b>
-      {{ .CommonAnnotations.description }}
-
-      🌐 <b>Instance:</b>
-      {{ .CommonLabels.instance }}
-
-      🕒 <b>Time:</b>
-      {{ .CommonAnnotations.startsAt }}  
-      
-    email_configs:
-
-  - to: "22102a030104@gmail.com"
+    annotations:
+      summary: High CPU Usage
+      description: CPU usage exceeded 80%.
