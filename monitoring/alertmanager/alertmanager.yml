@@ -1,9 +1,9 @@
 global:
 
   smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: '22102a030104@gmail.com'
-  smtp_auth_username: '22102a030104@gmail.com'
-  smtp_auth_password: 'bxlm nkwu oubx fcij'
+  smtp_from: '********@gmail.com'
+  smtp_auth_username: '********@gmail.com'
+  smtp_auth_password: '********'
   smtp_require_tls: true
 
 route:
@@ -15,10 +15,10 @@ receivers:
 
   email_configs:
 
-  - to: '22102a030104@gmail.com'
+  - to: '*********@gmail.com'
 
   telegram_configs:
 
-  - bot_token: 8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ
+  - bot_token: ********************
     chat_id: 5360828542
     send_resolved: true

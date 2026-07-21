@@ -56,7 +56,30 @@ receivers:
 
   email_configs:
 
-  - to: "22102a030104@gmail.com"
+    - to: "22102a030104@gmail.com"
+      headers:
+        Subject: "🚨 Trade Settlement Alert - {{ .CommonLabels.alertname }}"
+      html: |
+        <h2>🚨 Trade Settlement Alert</h2>
+
+        <p><b>Alert:</b> {{ .CommonLabels.alertname }}</p>
+
+        <p><b>Severity:</b> {{ .CommonLabels.severity }}</p>
+
+        <p><b>Summary:</b><br>
+        {{ .CommonAnnotations.summary }}</p>
+
+        <p><b>Description:</b><br>
+        {{ .CommonAnnotations.description }}</p>
+
+        <p><b>Instance:</b><br>
+        {{ .CommonLabels.instance }}</p>
+
+        <p><b>Job:</b><br>
+        {{ .CommonLabels.job }}</p>
+
+        <p><b>Time:</b><br>
+        {{ .StartsAt }}</p>
 
 ####################################
 # Both
