@@ -9,103 +9,85 @@ global:
 
 route:
   receiver: all-alerts
+
   group_wait: 10s
   group_interval: 30s
   repeat_interval: 1h
 
 receivers:
-  - name: all-alerts
 
-    telegram_configs:
-      - bot_token: "8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ"
-        chat_id: 5360828542
-        parse_mode: HTML
-        send_resolved: true
+####################################
+# Telegram
+####################################
 
-        message: |
-          🚨 <b>Trade Settlement Alert</b>
+- name: telegram
 
-          🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
-          ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+  telegram_configs:
 
-          📝 <b>Summary:</b>
-          {{ .CommonAnnotations.summary }}
+  - bot_token: "8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ"
+    chat_id: 5360828542
+    parse_mode: HTML
 
-          📄 <b>Description:</b>
-          {{ .CommonAnnotations.description }}
 
-          🌐 <b>Instance:</b>
-          {{ .CommonLabels.instance }}
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
 
-          💼 <b>Job:</b>
-          {{ .CommonLabels.job }}
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
 
-          🕒 <b>Started:</b>
-          {{ .StartsAt }}
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
 
-          {{ if gt (len .Alerts.Resolved) 0 }}
-          ✅ <b>Resolved Alerts:</b>
-          {{ range .Alerts.Resolved }}
-          • {{ .Labels.alertname }}
-          {{ end }}
-          {{ end }}
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
 
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}
+
+
+####################################
+# Email
+####################################
+
+- name: email
+
+  email_configs:
+
+  - to: "22102a030104@gmail.com"
+
+####################################
+# Both
+####################################
+
+- name: all-alerts
+
+  telegram_configs:
+
+  - bot_token: "8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ"
+    chat_id: 5360828542
+    parse_mode: HTML
+
+    message: |
+      🚨 <b>Trade Settlement Alert</b>
+
+      🔥 <b>Alert:</b> {{ .CommonLabels.alertname }}
+      ⚠ <b>Severity:</b> {{ .CommonLabels.severity }}
+
+      📝 <b>Summary:</b>
+      {{ .CommonAnnotations.summary }}
+
+      📄 <b>Description:</b>
+      {{ .CommonAnnotations.description }}
+
+      🌐 <b>Instance:</b>
+      {{ .CommonLabels.instance }}
+
+      🕒 <b>Time:</b>
+      {{ .CommonAnnotations.startsAt }}  
+      
     email_configs:
-      - to: "22102a030104@gmail.com"
-        send_resolved: true
 
-        headers:
-          Subject: "🚨 Trade Settlement Alert - {{ .CommonLabels.alertname }}"
-
-        html: |
-          <html>
-          <body style="font-family:Arial,sans-serif">
-
-          <h2 style="color:#d32f2f;">
-          🚨 Trade Settlement Alert
-          </h2>
-
-          <table border="1" cellpadding="8" cellspacing="0">
-            <tr>
-              <td><b>Alert</b></td>
-              <td>{{ .CommonLabels.alertname }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Severity</b></td>
-              <td>{{ .CommonLabels.severity }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Summary</b></td>
-              <td>{{ .CommonAnnotations.summary }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Description</b></td>
-              <td>{{ .CommonAnnotations.description }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Instance</b></td>
-              <td>{{ .CommonLabels.instance }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Job</b></td>
-              <td>{{ .CommonLabels.job }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Started</b></td>
-              <td>{{ .StartsAt }}</td>
-            </tr>
-
-            <tr>
-              <td><b>Status</b></td>
-              <td>{{ .Status }}</td>
-            </tr>
-          </table>
-
-          </body>
-          </html>
+  - to: "22102a030104@gmail.com"
