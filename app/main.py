@@ -284,7 +284,7 @@ class UserRegister(BaseModel):
 def register(
     user: UserCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(admin_required)):
+    ):
     existing_user = db.query(User).filter(
         User.username == user.username
     ).first()
