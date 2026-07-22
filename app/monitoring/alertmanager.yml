@@ -56,7 +56,7 @@ receivers:
 
   email_configs:
 
-  - to: "22102a030104@gmail.com"
+    - to: "22102a030104@gmail.com"
 
 ####################################
 # Both
@@ -88,6 +88,6 @@ receivers:
       🕒 <b>Time:</b>
       {{ .CommonAnnotations.startsAt }}  
       
-    email_configs:
+  email_configs:
 
-  - to: "22102a030104@gmail.com"
+    - to: "22102a030104@gmail.com"

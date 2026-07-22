@@ -11,14 +11,14 @@ route:
 
 receivers:
 
-- name: notifications
+  - name: notifications
 
-  email_configs:
+    email_configs:
 
-  - to: '22102a030104@gmail.com'
+      - to: '22102a030104@gmail.com'
 
-  telegram_configs:
+    telegram_configs:
 
-  - bot_token: 8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ
-    chat_id: 5360828542
-    send_resolved: true
+      - bot_token: 8498082535:AAFRen6D9hRlMv8fCmPH-sqGXSjB6axcrZQ
+        chat_id: 5360828542
+        send_resolved: true
