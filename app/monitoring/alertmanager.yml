@@ -5,7 +5,7 @@ global:
   smtp_smarthost: 'smtp.gmail.com:587'
   smtp_from: '22102a030104@gmail.com'
   smtp_auth_username: '22102a030104@gmail.com'
-  smtp_auth_password: ${GMAIL_PASSWORD}
+  smtp_auth_password: hnmb wlml jzmv wfcts
   smtp_require_tls: true
 
 route:
@@ -25,8 +25,8 @@ receivers:
 
   telegram_configs:
 
-  - bot_token: ${TELEGRAM_BOT_TOKEN}
-    chat_id: ${TELEGRAM_CHAT_ID}
+  - bot_token: 8498082535:AAGkkGpHdzb3PNWcmLzp-aPQ7yN84AN0Lh4
+    chat_id: 5360828542
     parse_mode: HTML
 
 
@@ -67,8 +67,8 @@ receivers:
 
   telegram_configs:
 
-  - bot_token: ${TELEGRAM_BOT_TOKEN}
-    chat_id: ${TELEGRAM_CHAT_ID}
+  - bot_token: 8498082535:AAGkkGpHdzb3PNWcmLzp-aPQ7yN84AN0Lh4
+    chat_id: 5360828542
     parse_mode: HTML
 
     message: |
