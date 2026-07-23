@@ -17,10 +17,10 @@ from app.utils.metrics_store import increment, set_value
 load_dotenv()
 
 MARKET_VALUES = {
-    "LOW": 0,
-    "NORMAL": 1,
-    "BUSY": 2,
-    "PEAK": 3,
+    "LOW": 1,
+    "NORMAL": 2,
+    "BUSY": 3,
+    "PEAK": 4,
 }
 
 
@@ -97,8 +97,8 @@ class ProducerService:
 
             try:
 
-                # Change market state every 60 seconds
-                if time.time() - last_state_change >= 60:
+                # Change market state every 10 seconds
+                if time.time() - last_state_change >= 10:
 
                     current_state = MarketState.get_state()
 

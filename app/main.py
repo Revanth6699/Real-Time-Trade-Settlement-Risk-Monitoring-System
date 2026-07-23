@@ -84,6 +84,7 @@ from app.monitoring.prometheus_metrics import (
     TOTAL,
 )
 
+from app.utils.metrics_store import increment, set_value, get_value
 
 from contextlib import asynccontextmanager
 
@@ -635,12 +636,10 @@ def metrics():
         HIGH_RISK.set(high_risk)
         ANOMALIES.set(anomalies)
 
-        if failed == 0:
-            MARKET_STATE.set(1)
-        elif failed < 100:
-            MARKET_STATE.set(2)
-        else:
-            MARKET_STATE.set(3)
+        market_state = get_value("market_state")
+        if market_state is not None:
+            MARKET_STATE.set(market_state)
+
 
         return Response(
             generate_latest(),
