@@ -31,10 +31,6 @@ class Trade(Base):
 
     anomaly_flag = Column(Boolean)
     
-
-    ml_prediction = Column(Integer)
-    
-    ml_probability = Column(Float)
     
     created_at = Column(DateTime, default=datetime.utcnow)
 
