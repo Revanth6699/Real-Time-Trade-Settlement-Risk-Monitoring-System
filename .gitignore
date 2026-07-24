@@ -1,46 +1,95 @@
+
+---
+
+# .gitignore
+
+```
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
 
 # Virtual Environment
 venv/
+.venv/
+env/
+
+# Environment
 .env
 .env.*
+!.env.example
 
 # VS Code
 .vscode/
 
-# PyCharm
+# JetBrains
 .idea/
 
-# Logs
-*.log
-
-# SQLite
-*.db
-
-# Python cache
-.pytest_cache/
-.mypy_cache/
-
-# Docker
-*.tar
-
-# OS
+# macOS
 .DS_Store
+
+# Windows
 Thumbs.db
 
-# Secrets
-secrets.json
-credentials.json
+# Logs
+logs/
+*.log
 
-# ML Models (if too large)
-*.pkl
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Docker
+docker-data/
+*.pid
+
+# Redis
+dump.rdb
 
 # Grafana
-grafana.db
+grafana/data/
+grafana/plugins/
 
-# PDF Reports
-*.pdf
+# Prometheus
+prometheus/data/
+
+# Alertmanager
+alertmanager/data/
+
+# PostgreSQL
+postgres-data/
+
+# Model Files
+*.h5
+*.keras
+*.onnx
+*.ckpt
+
+# ML Cache
+.mlflow/
+wandb/
+
+# Secrets
+credentials.json
+service-account.json
+google-credentials.json
+*.pem
+*.key
+
+# Misc
+.cache/
+temp/
+tmp/
+```
+
