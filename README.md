@@ -38,24 +38,6 @@ Trades are continuously generated, processed, risk scored, persisted, monitored,
 
 ---
 
-## Project Structure
-
-Real-Time-Trade-Settlement-Risk-Monitoring-System
-│
-├── app/
-├── monitoring/
-├── models/
-├── screenshots/
-│   ├── dashboard.png
-│   ├── alerts.png
-│   └── architecture.png
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-├── .env.example
-├── .gitignore
-├── LICENSE
-└── README.md
 
 ## Tech Stack
 
