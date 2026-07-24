@@ -129,6 +129,7 @@ Alertmanager
 ### Run
 
 - docker compose up --build
+- 
 
 
 
@@ -137,11 +138,12 @@ Alertmanager
 
 ## Services
 
-Service         Port
-FastAPI	        8000
-Grafana	        3000
-Prometheus      9090
-Alertmanager    9093
+| Service      | Port |
+| ------------ | ---: |
+| FastAPI      | 8000 |
+| Grafana      | 3000 |
+| Prometheus   | 9090 |
+| Alertmanager | 9093 |
 
 ---
 
@@ -161,6 +163,14 @@ Prometheus collects application metrics from FastAPI.
 ### Alertmanager sends notifications
 
 - Telegram
+
+---
+
+## API
+### Swagger UI:
+
+- Local Machine: http://localhost:8000/docs
+- Deployed: https://real-time-trade-settlement-risk.onrender.com/docs
 
 
 ---
