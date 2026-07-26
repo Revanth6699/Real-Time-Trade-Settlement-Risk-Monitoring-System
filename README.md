@@ -168,6 +168,6 @@ Prometheus collects application metrics from FastAPI.
 ---
 
 ## Author
-Sarvasetty Revanth Kumar
-sarvasettyrevanth.66@gmail.com
-https://www.linkedin.com/in/revanth-kumar-sarvasetty-8168772b8
+- Sarvasetty Revanth Kumar
+- sarvasettyrevanth.66@gmail.com
+- https://www.linkedin.com/in/revanth-kumar-sarvasetty-8168772b8
