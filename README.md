@@ -164,3 +164,10 @@ Prometheus collects application metrics from FastAPI.
 - Historical analytics
 - Kubernetes deployment
 - Distributed consumer scaling
+
+---
+
+## Author
+Sarvasetty Revanth Kumar
+sarvasettyrevanth.66@gmail.com
+https://www.linkedin.com/in/revanth-kumar-sarvasetty-8168772b8
